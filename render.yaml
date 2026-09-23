@@ -1,0 +1,11 @@
+﻿services:
+  - type: web
+    name: docdoc
+    runtime: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health/live
+    envVars:
+      - key: NODE_ENV
+        value: production

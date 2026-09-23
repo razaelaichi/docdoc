@@ -77,6 +77,14 @@ describe("session expiry", () => {
     expect(await screen.findByText(/Your session has ended/)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
   });
+
+  it("keeps the expired-session explanation across the redirect to sign in", async () => {
+    sessionStorage.setItem("docdoc:auth-reason", "expired");
+    renderApp(doctorRoutes, { at: "/login" });
+    expect(await screen.findByText(/Your session has ended/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
+    sessionStorage.removeItem("docdoc:auth-reason");
+  });
 });
 
 describe("cases list", () => {

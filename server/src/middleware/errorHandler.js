@@ -16,6 +16,7 @@ export const notFoundHandler = (_req, _res, next) => next(notFound("Route not fo
 // eslint-disable-next-line no-unused-vars -- express identifies error handlers by arity
 export function errorHandler(err, req, res, _next) {
   let error = err instanceof AppError ? err : null;
+  if (!error && (err.status === 404 || err.statusCode === 404)) error = notFound(err.message || "Not found");
   if (!error && BODY_ERRORS[err.type]) error = new AppError(...BODY_ERRORS[err.type]);
   if (!error && err.name === "MulterError") {
     error = new AppError(...(MULTER_ERRORS[err.code] ?? [400, "INVALID_UPLOAD", "Invalid upload"]));

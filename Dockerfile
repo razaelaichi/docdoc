@@ -22,11 +22,11 @@ FROM node:26-slim AS server
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=server-deps /app/node_modules node_modules
+COPY --from=client-build /app/client/dist /app/client/dist
 COPY server server
 RUN mkdir -p server/storage/uploads && chown -R node:node server/storage
 USER node
 WORKDIR /app/server
-EXPOSE 4000
 CMD ["node", "src/index.js"]
 
 FROM nginx:1.29-alpine AS web
@@ -51,6 +51,7 @@ RUN mkdir -p server/storage/uploads
 COPY deploy/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=client-build /app/client/dist /usr/share/nginx/html
+COPY --from=client-build /app/client/dist /app/client/dist
 COPY --chmod=755 deploy/start-all-in-one.sh /usr/local/bin/start-all-in-one
 EXPOSE 80
 CMD ["start-all-in-one"]

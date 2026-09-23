@@ -3,6 +3,23 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { api, onSessionExpired, refreshSession, setAccessToken } from "./lib/api.js";
 import { reportWorkflow } from "./lib/telemetry.js";
 
+const EXPIRED_REASON_KEY = "docdoc:auth-reason";
+const readReason = () => {
+  try {
+    return sessionStorage.getItem(EXPIRED_REASON_KEY);
+  } catch {
+    return null;
+  }
+};
+const persistReason = (reason) => {
+  try {
+    if (reason) sessionStorage.setItem(EXPIRED_REASON_KEY, reason);
+    else sessionStorage.removeItem(EXPIRED_REASON_KEY);
+  } catch {
+    // sessionStorage can be unavailable in private browsing or restricted environments.
+  }
+};
+
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
@@ -24,16 +41,18 @@ async function tracked(name, action) {
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
   // reason: why the doctor is signed out ("expired" shows a notice on the sign-in page)
-  const [state, setState] = useState({ status: "loading", user: null, reason: null });
+  const [state, setState] = useState({ status: "loading", user: null, reason: readReason() });
 
   const signedIn = useCallback(({ user, accessToken }) => {
     setAccessToken(accessToken);
+    persistReason(null);
     setState({ status: "in", user, reason: null });
   }, []);
 
   const signedOut = useCallback(
     (reason = null) => {
       setAccessToken(null);
+      persistReason(reason);
       queryClient.clear(); // drop cached patient data
       setState({ status: "out", user: null, reason });
     },
@@ -47,6 +66,7 @@ export function AuthProvider({ children }) {
       .then(signedIn)
       .catch(() => {
         setAccessToken(null);
+        persistReason(null);
         setState({ status: "out", user: null, reason: null });
       });
   }, [signedIn, signedOut]);

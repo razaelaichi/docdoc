@@ -8,12 +8,22 @@ APP_DIR="${APP_DIR:-/app/server}"
 TEMPLATE="${NGINX_TEMPLATE:-/etc/nginx/templates/default.conf.template}"
 SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/default.conf}"
 
-# nginx listens where the host routes traffic (Render sets PORT); the API stays on an internal port,
-# and in this container it is always local, whatever API_UPSTREAM the host environment holds.
+# nginx listens where the host routes traffic (Render sets PORT, or defaults to 80/4000);
+# the API stays on an internal port (4001) so it never collides or receives raw external traffic.
 export NGINX_PORT="${PORT:-${NGINX_PORT:-80}}"
-API_PORT="${API_PORT:-4000}"
+API_PORT="${API_PORT:-4001}"
 export API_UPSTREAM="http://127.0.0.1:${API_PORT}"
-envsubst '${API_UPSTREAM} ${NGINX_PORT}' < "$TEMPLATE" > "$SITE_CONF"
+
+EXTRA_LISTEN=""
+if [ "${NGINX_PORT}" != "80" ] && [ "${NGINX_PORT}" != "4000" ]; then
+  EXTRA_LISTEN="listen 80; listen 4000;"
+elif [ "${NGINX_PORT}" = "80" ]; then
+  EXTRA_LISTEN="listen 4000;"
+elif [ "${NGINX_PORT}" = "4000" ]; then
+  EXTRA_LISTEN="listen 80;"
+fi
+export EXTRA_LISTEN
+envsubst '${API_UPSTREAM} ${NGINX_PORT} ${EXTRA_LISTEN}' < "$TEMPLATE" > "$SITE_CONF"
 
 cd "$APP_DIR"
 PORT="$API_PORT" node src/index.js &
