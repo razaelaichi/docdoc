@@ -12,6 +12,12 @@ SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/default.conf}"
 # and in this container it is always local, whatever API_UPSTREAM the host environment holds.
 export NGINX_PORT="${PORT:-${NGINX_PORT:-80}}"
 API_PORT="${API_PORT:-4000}"
+# a PORT copied from a local .env (e.g. 4000) would put nginx on the API's port: nginx would then
+# proxy /api to itself and loop, so the API moves aside instead
+if [ "$API_PORT" = "$NGINX_PORT" ]; then
+  API_PORT=$((NGINX_PORT + 1))
+  echo "start-all-in-one: PORT $NGINX_PORT is nginx's; the API uses $API_PORT" >&2
+fi
 export API_UPSTREAM="http://127.0.0.1:${API_PORT}"
 envsubst '${API_UPSTREAM} ${NGINX_PORT}' < "$TEMPLATE" > "$SITE_CONF"
 
