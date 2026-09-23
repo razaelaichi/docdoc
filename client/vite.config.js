@@ -5,12 +5,18 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// The gateway's security headers, so `vite preview` behaves like production.
-const securityHeaders = Object.fromEntries(
-  [...readFileSync(new URL("../deploy/security-headers.conf", import.meta.url), "utf8").matchAll(/^add_header ([\w-]+) (["'])(.+)\2 always;/gm)].map(
-    ([, name, , value]) => [name, value]
-  )
-);
+// The gateway's security headers, so `vite preview` behaves like production. Only preview uses them:
+// a build context without deploy/ (e.g. a Docker stage that copies only client/) still builds.
+function readSecurityHeaders() {
+  let conf;
+  try {
+    conf = readFileSync(new URL("../deploy/security-headers.conf", import.meta.url), "utf8");
+  } catch {
+    return {};
+  }
+  return Object.fromEntries([...conf.matchAll(/^add_header ([\w-]+) (["'])(.+)\2 always;/gm)].map(([, name, , value]) => [name, value]));
+}
+const securityHeaders = readSecurityHeaders();
 
 // Preload the two fonts every page renders above the fold, so text paints in its final face
 // without a late swap (less layout shift, earlier LCP).

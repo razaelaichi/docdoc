@@ -15,6 +15,7 @@ COPY server/package.json server/
 COPY client/package.json client/
 RUN npm ci --workspace client --include-workspace-root=false
 COPY client client
+COPY deploy/security-headers.conf deploy/
 RUN npm run build --workspace client
 
 FROM node:26-slim AS server
