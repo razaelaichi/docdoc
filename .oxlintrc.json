@@ -1,0 +1,64 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "import",
+    "node",
+    "promise",
+    "oxc"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "client/**"
+      ],
+      "plugins": [
+        "react",
+        "react-hooks"
+      ],
+      "rules": {
+        "react/rules-of-hooks": "error",
+        "react/only-export-components": [
+          "warn",
+          {
+            "allowConstantExport": true,
+            "allowExportNames": [
+              "useAuth",
+              "useToast",
+              "homeFor"
+            ]
+          }
+        ],
+        "react/react-in-jsx-scope": "off",
+        "no-console": "error",
+        "react/no-danger": "error",
+        "react/jsx-no-script-url": "error",
+        "react/jsx-no-target-blank": "error",
+        "react/no-unescaped-entities": "off"
+      }
+    },
+    {
+      "files": [
+        "client/scripts/**"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**"
+  ],
+  "rules": {
+    "no-underscore-dangle": "off",
+    "oxc/no-async-endpoint-handlers": "off",
+    "import/no-named-as-default": "off",
+    "import/no-unassigned-import": "off",
+    "no-eval": "error",
+    "no-new-func": "error"
+  }
+}

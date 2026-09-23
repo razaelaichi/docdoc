@@ -1,0 +1,20 @@
+{
+  "name": "docdoc",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "test": "npm test -w server && npm test -w client",
+    "lint": "oxlint --deny-warnings",
+    "build": "npm run build -w client && npm run check:bundle -w client",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "oxlint": "^1.85.0"
+  },
+  "type": "module"
+}

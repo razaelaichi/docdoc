@@ -1,0 +1,589 @@
+{
+  "title": "DocDoc",
+  "uid": "docdoc",
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "API latency p95 by route",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "API 5xx rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{status=~\"5..\"}[5m])) / sum(rate(http_request_duration_seconds_count[5m]))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Throughput (req/s)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (route) (rate(http_request_duration_seconds_count[5m]))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Event-loop lag p99",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "nodejs_eventloop_lag_p99_seconds",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Sources processed",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (outcome) (increase(pipeline_sources_total[1h]))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "LLM tokens / min",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (type) (rate(llm_tokens_total[5m])) * 60",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "LLM latency p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, outcome) (rate(llm_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Agent tool calls by outcome",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool, outcome) (rate(agent_tool_calls_total[5m]))",
+          "legendFormat": "{{route}}{{outcome}}{{type}}{{tool}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "Frontend: real users",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "title": "Core Web Vitals p75 by metric",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum by (le, metric) (rate(frontend_web_vital_seconds_bucket[15m])))",
+          "legendFormat": "{{metric}}"
+        }
+      ],
+      "description": "Good: LCP < 2.5 s, INP < 0.2 s, FCP < 1.8 s, TTFB < 0.8 s"
+    },
+    {
+      "id": 11,
+      "title": "CLS p75 by page",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum by (le, route) (rate(frontend_cls_bucket[15m])))",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "description": "Good: < 0.1"
+    },
+    {
+      "id": 12,
+      "title": "Share of poor web-vital samples",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (metric) (rate(frontend_web_vital_ratings_total{rating=\"poor\"}[30m])) / sum by (metric) (rate(frontend_web_vital_ratings_total[30m]))",
+          "legendFormat": "{{metric}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Page load by network phase p75",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 41,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.75, sum by (le, phase) (rate(frontend_navigation_phase_seconds_bucket[15m])))",
+          "legendFormat": "{{phase}}"
+        }
+      ],
+      "description": "DNS, TCP, TLS, TTFB, download and DOM-interactive timings from the Navigation Timing API"
+    },
+    {
+      "id": 14,
+      "title": "Frontend errors per minute",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 49,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (kind) (rate(frontend_errors_total[5m])) * 60",
+          "legendFormat": "{{kind}}"
+        }
+      ],
+      "description": "runtime, unhandled-rejection, render (route error boundary), chunk-load (stale deploy)"
+    },
+    {
+      "id": 15,
+      "title": "Failed user workflows (share)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 49,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (workflow) (rate(frontend_workflows_total{outcome=\"failure\"}[30m])) / sum by (workflow) (rate(frontend_workflows_total[30m]))",
+          "legendFormat": "{{workflow}}"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Where API latency comes from: browser vs server p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(frontend_api_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "browser (network + server)"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{route=~\"/api/.*\"}[5m])))",
+          "legendFormat": "server only"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(mongodb_command_duration_seconds_bucket[5m])))",
+          "legendFormat": "database commands"
+        }
+      ],
+      "description": "A gap between browser and server is network or gateway time; server time close to database time points at queries"
+    },
+    {
+      "id": 17,
+      "title": "API failures seen by browsers",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 57,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(frontend_api_request_duration_seconds_count{status=~\"5xx|network\"}[5m])) * 60",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "description": "per minute; 'network' = the request never got a response"
+    },
+    {
+      "id": 18,
+      "title": "CSP violations (last hour)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 65,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (directive) (increase(frontend_csp_violations_total[1h]))",
+          "legendFormat": "{{directive}}"
+        }
+      ],
+      "description": "Any value here is either an attack being blocked or a deploy that needs a policy change"
+    },
+    {
+      "id": 19,
+      "type": "row",
+      "title": "Database",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 73,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 20,
+      "title": "MongoDB command latency p95",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 74,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, command) (rate(mongodb_command_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{command}}"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "MongoDB command errors per minute",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 74,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (job, command) (rate(mongodb_command_duration_seconds_count{outcome=\"error\"}[5m])) * 60",
+          "legendFormat": "{{job}} {{command}}"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Connection pool in use",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 82,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (job) (mongodb_pool_connections_in_use)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "description": "maxPoolSize is 20 per process"
+    },
+    {
+      "id": 23,
+      "title": "Connectivity problems",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 82,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "targets": [
+        {
+          "expr": "sum by (job) (increase(mongodb_heartbeat_failures_total[15m]))",
+          "legendFormat": "heartbeat failures {{job}}"
+        },
+        {
+          "expr": "sum by (job, reason) (increase(mongodb_pool_checkout_failures_total[15m]))",
+          "legendFormat": "checkout failures {{job}} {{reason}}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+# Local production-like stack. MongoDB is external (Atlas): set MONGODB_URI in server/.env.
+services:
+  api:
+    build: { context: ., target: server }
+    env_file: server/.env
+    environment:
+      NODE_ENV: production
+      TRUST_PROXY: 1 # behind the nginx gateway
+    volumes: [uploads:/app/server/storage/uploads]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+    restart: unless-stopped
+
+  worker:
+    build: { context: ., target: server }
+    command: ["node", "src/worker.js"]
+    env_file: server/.env
+    environment:
+      NODE_ENV: production
+      WORKER_METRICS_HOST: 0.0.0.0 # reachable by Prometheus on the compose network only
+    volumes: [uploads:/app/server/storage/uploads]
+    restart: unless-stopped
+
+  web:
+    build: { context: ., target: web }
+    ports: ["8080:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    volumes: [./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro]
+    ports: ["127.0.0.1:9090:9090"]
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3000:3000"]
+
+volumes:
+  uploads:
