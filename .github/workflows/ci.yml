@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 26
           cache: npm
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/mongodb-binaries # in-memory MongoDB used by integration tests
           key: mongodb-binaries-${{ runner.os }}
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: 26
           cache: npm
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/mongodb-binaries
           key: mongodb-binaries-${{ runner.os }}
