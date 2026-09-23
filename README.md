@@ -541,6 +541,25 @@ npm run dev -w client                # web app   http://localhost:5173
 * `docker compose up --build` runs the API, worker, gateway (http://localhost:8080), Prometheus and
   Grafana, with MongoDB from `server/.env`.
 
+### Deploying as one service (e.g. Render)
+
+`docker build` without a target produces the **all-in-one** image: nginx serving the app and
+proxying `/api`, the API and the worker in one container (`deploy/start-all-in-one.sh` starts and
+supervises them, and stops the container if any of them stops, so the host restarts it). On Render,
+create one **Web Service** from the repository using the Dockerfile, and set:
+
+| Variable | Value |
+|---|---|
+| `MONGODB_URI` | your Atlas connection string (allow Render's outbound IPs in Atlas Network Access) |
+| `JWT_ACCESS_SECRET` | a random string of at least 32 characters |
+| `CORS_ORIGINS`, `PUBLIC_APP_URL` | the service's own address, e.g. `https://docdoc.onrender.com` |
+| `SMTP_URL` | required in production (confirmation and reset emails) |
+| `NVIDIA_API_KEY` | optional: AI structuring |
+
+`PORT` is set by Render; nginx listens on it and the API stays on an internal port. Uploads live on
+the container's disk: attach a Render disk at `/app/server/storage/uploads` to keep them across
+deploys.
+
 | Variable | Purpose |
 |---|---|
 | `MONGODB_URI` | MongoDB connection string (required) |
