@@ -30,6 +30,8 @@ EXPOSE 4000
 CMD ["node", "src/index.js"]
 
 FROM nginx:1.29-alpine AS web
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# rendered to /etc/nginx/conf.d/default.conf at startup with API_UPSTREAM filled in
+COPY deploy/nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV API_UPSTREAM=http://api:4000
 COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=client-build /app/client/dist /usr/share/nginx/html

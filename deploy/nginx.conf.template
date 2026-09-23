@@ -1,5 +1,9 @@
 # Gateway: serves the SPA, proxies the API, keeps internal endpoints internal.
 # TLS terminates in front of this (load balancer / ingress), which sets X-Forwarded-Proto.
+#
+# Template: the nginx image fills in ${API_UPSTREAM} from the environment at startup
+# (docker compose: http://api:4000; a host like Render: the API service's own URL,
+# e.g. https://docdoc-api.onrender.com).
 limit_req_zone $binary_remote_addr zone=api:10m rate=20r/s;
 
 # Any request that reached the load balancer over plain HTTP is sent to HTTPS.
@@ -30,15 +34,20 @@ server {
 
   location /api/ {
     limit_req zone=api burst=40 nodelay;
-    proxy_pass http://api:4000;
-    proxy_set_header Host $host;
+    proxy_pass ${API_UPSTREAM};
+    # the upstream's own name: hosts like Render route by it (and it's needed for TLS SNI)
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_ssl_server_name on;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_read_timeout 120s; # PDF export
   }
 
   location /health/ {
-    proxy_pass http://api:4000;
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host $proxy_host;
+    proxy_ssl_server_name on;
   }
 
   location = /metrics {

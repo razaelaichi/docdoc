@@ -5,7 +5,7 @@
 |---|---|---|
 | API | `npm start -w server` | MongoDB, `JWT_ACCESS_SECRET`, `SMTP_URL` (prod) |
 | Worker | `npm run worker -w server` | MongoDB, shared upload storage, `NVIDIA_API_KEY` (optional) |
-| Web | static `client/dist` behind `deploy/nginx.conf` | — |
+| Web | static `client/dist` behind `deploy/nginx.conf.template` | `API_UPSTREAM` (default `http://api:4000`; on Render, the API service URL) |
 
 `docker compose up --build` runs api, worker, web (http://localhost:8080), Prometheus (:9090) and
 Grafana (:3000, dashboard "DocDoc"), with MongoDB from `server/.env`.
