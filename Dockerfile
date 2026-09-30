@@ -29,7 +29,7 @@ USER node
 WORKDIR /app/server
 CMD ["node", "src/index.js"]
 
-FROM nginx:1.29-alpine AS web
+FROM nginx:1.31-alpine AS web
 # rendered to /etc/nginx/conf.d/default.conf at startup with API_UPSTREAM filled in
 COPY deploy/nginx.conf.template /etc/nginx/templates/default.conf.template
 ENV API_UPSTREAM=http://api:4000 NGINX_PORT=80
